@@ -1,8 +1,11 @@
-﻿#include "webserver.h"  
-#include <iostream>  
+﻿#include "./lib/console.h"  
 #include "./lib/httplib.h"  
-#include "./lib/console.h"  
+#include "webserver.h"  
 #include "webview/webview.h"
+#include <cmrc/cmrc.hpp>
+#include <iostream>  
+
+
 using namespace std;  
 
 using namespace httplib;  
@@ -11,9 +14,12 @@ using namespace httplib;
 Console console;
 Server server;
 
+CMRC_DECLARE(mypages);
+
+
 int port;
 
-
+#include <random>
 
 
 static void randomPort() {
@@ -54,12 +60,16 @@ static void backend() {
 static int client() {  
    try  
    {  
+	   auto fs = cmrc::mypages::get_filesystem();
        webview::webview w(true, nullptr);  
 	   w.init(R"(window.addEventListener('contextmenu', function(e) {
     e.preventDefault();
   });)");
        w.set_title("Web Server");  
-       w.navigate("http://localhost:" + to_string(port) + "/");  
+       //w.navigate("http://localhost:" + to_string(port) + "/");  
+	   auto file = fs.open("index.html");
+	   string html(file.begin(), file.end());
+	   w.set_html(html);
        w.run();  
 
        return 0;  

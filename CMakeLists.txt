@@ -11,5 +11,12 @@ endif()
 
 project ("webserver")
 
+
 # サブプロジェクトを含めます。
+add_subdirectory ("external/cmrc")
+
+
+# Link the resource library to your target  
 add_subdirectory ("webserver")
+
+
