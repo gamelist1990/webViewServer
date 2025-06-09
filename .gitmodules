@@ -1,0 +1,3 @@
+[submodule "external/cmrc"]
+	path = external/cmrc
+	url = https://github.com/vector-of-bool/cmrc.git
