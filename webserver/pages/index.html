@@ -1,32 +1,674 @@
 <html>
 <head>
-    <title>Web Server</title>
+    <title>桃を拾うゲーム - Modern Gaming Experience</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f5f6fa;
-            color: #222;
+        :root {
+            --primary-color: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary-color: #f093fb;
+            --accent-color: #4facfe;
+            --background-start: #667eea;
+            --background-end: #764ba2;
+            --surface: rgba(255, 255, 255, 0.95);
+            --surface-dark: rgba(255, 255, 255, 0.1);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --shadow-lg: 0 35px 60px -12px rgba(0, 0, 0, 0.3);
+            --border-radius: 24px;
+            --border-radius-sm: 16px;
+        }
+
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--background-start) 0%, var(--background-end) 100%);
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .game-container {
+            width: 480px;
+            max-width: 95vw;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 48px 32px 40px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: var(--border-radius);
+            pointer-events: none;
+        }
+
+        .game-container:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 40px 80px -12px rgba(0, 0, 0, 0.35);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .screen.active {
+            display: flex;
         }
 
         h1 {
-            color: #2d8cf0;
-            text-align: center;
-            margin-top: 40px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            letter-spacing: -0.01em;
         }
 
         p {
-            text-align: center;
-            font-size: 1.1em;
-            margin-top: 20px;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+            min-width: 160px;
+            margin-top: 24px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        #gameCanvas {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 24px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .score-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #scoreLabel {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .game-info {
+            display: flex;
+            gap: 24px;
+            margin-top: 16px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .controls-hint {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        .final-score {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 24px 0;
+        }
+
+        .animation-enter {
+            animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                width: 95vw;
+                padding: 32px 24px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            #gameCanvas {
+                width: 100% !important;
+                height: auto !important;
+                max-width: 320px;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
         }
     </style>
 
 </head>
-<body>
-    <h1>Welcome to the Web Server</h1>
+<body>    <div class="game-container">
+        <!-- Game Start画面 -->
+        <div id="startScreen" class="screen active">
+            <h1>桃キャッチ</h1>
+            <p class="subtitle">桃を拾いゲーム！！</p>
+            <button id="startBtn" class="btn">ゲームスタート</button>
+            <div class="controls-hint">A D キーでバスケットを操作できるよ</div>
+        </div>
 
-    <p>This is a simple web server serving static files.</p>
+        <!-- Game画面 -->
+        <div id="gameScreen" class="screen">
+            <canvas id="gameCanvas" width="400" height="500"></canvas>
+            <div class="score-container">
+                <span id="scoreLabel">スコア: 0</span>
+                <div class="game-info">
+                    <span id="timeLabel">残り時間: 20秒</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result画面 -->
+        <div id="resultScreen" class="screen">
+            <h2>ゲーム終了</h2>
+            <p>あなたのスコアは <span id="finalScore">0</span> 点でした！</p>
+            <p>お疲れ様!!</p>
+            <button id="retryBtn" class="btn">もう一度プレイ</button>
+        </div>
+    </div>    <script>
+    // 画面要素取得
+    const startScreen = document.getElementById('startScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const startBtn = document.getElementById('startBtn');
+    const retryBtn = document.getElementById('retryBtn');
+    const scoreLabel = document.getElementById('scoreLabel');
+    const timeLabel = document.getElementById('timeLabel');
+    const finalScore = document.getElementById('finalScore');
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // ゲーム変数
+    let score = 0;
+    let peaches = [];
+    let basketX = 170;
+    let isPlaying = false;
+    let gameTimer = null;
+    let peachSpeed = 2;
+    let gameTime = 40;
+    let timeLeft = gameTime;
+    let spawnRate = 0.03;
+    let speedUpInterval = null;
+
+    // エフェクト用
+    let effects = [];
+
+    // スーパー桃用バー
+    let superBar = 0;
+    let superBarMax = 100;
+    let superBarDecay = 0.2;
+
+    // スーパー桃バリア状態
+    let barrierActive = false;
+    let barrierEffectTime = 0;
+
+    // モダンなサウンド生成
+    function playCatchSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+            oscillator.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+            
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            
+            oscillator.type = 'triangle';
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.2);
+            
+            oscillator.onended = () => audioCtx.close();
+        } catch (e) {
+            console.log('Audio not supported');
+        }
+    }
+
+    // 画面遷移（アニメーション付き）
+    function showScreen(screen) {
+        // 現在のアクティブ画面を非表示
+        document.querySelectorAll('.screen').forEach(s => {
+            s.classList.remove('active');
+        });
+        
+        // 新しい画面を表示
+        setTimeout(() => {
+            screen.classList.add('active', 'animation-enter');
+        }, 100);
+    }
+
+    // ゲーム初期化
+    function initGame() {
+        score = 0;
+        timeLeft = gameTime;
+        peaches = [];
+        basketX = 170;
+        scoreLabel.textContent = 'スコア: 0';
+        timeLabel.textContent = `残り時間: ${timeLeft}秒`;
+        spawnPeach();
+    }
+
+    // 桃生成（良い桃・悪い桃・スーパー桃）
+    function spawnPeach() {
+        if (Math.random() < spawnRate) {
+            const rand = Math.random();
+            let type = 'good';
+            if (rand < 0.12) {
+                type = 'bad';
+            } else if (rand > 0.92) {
+                type = 'super';
+            }
+            // ランダムな大きさ（良い桃: 16-22, 悪い桃: 16-22, スーパー桃: 20-28）
+            let radius = 18;
+            if (type === 'super') {
+                radius = 24 + Math.random() * 4;
+            } else {
+                radius = 16 + Math.random() * 6;
+            }
+            peaches.push({
+                x: Math.random() * (400 - 2 * radius) + radius,
+                y: -radius,
+                speed: peachSpeed + Math.random() * 2,
+                type: type,
+                radius: radius
+            });
+        }
+    }
+
+    // エフェクト描画
+    function drawEffects() {
+        for (let i = effects.length - 1; i >= 0; i--) {
+            const ef = effects[i];
+            ctx.save();
+            ctx.globalAlpha = ef.alpha;
+            ctx.beginPath();
+            ctx.arc(ef.x, ef.y, ef.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ef.color;
+            ctx.fill();
+            ctx.restore();
+            ef.radius += 2;
+            ef.alpha -= 0.04;
+            if (ef.alpha <= 0) effects.splice(i, 1);
+        }
+    }
+
+    // スーパー桃バー描画
+    function drawSuperBar() {
+        ctx.save();
+        ctx.globalAlpha = 0.9;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(20, 20, 200, 18);
+        ctx.strokeStyle = '#aaa';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(20, 20, 200, 18);
+        // バー本体
+        const grad = ctx.createLinearGradient(20, 20, 220, 38);
+        grad.addColorStop(0, '#ffe082');
+        grad.addColorStop(1, '#ffd600');
+        ctx.fillStyle = grad;
+        ctx.fillRect(20, 20, Math.max(0, Math.min(200, superBar * 2)), 18);
+        // テキスト
+        ctx.font = 'bold 14px Inter, sans-serif';
+        ctx.fillStyle = '#b8860b';
+        ctx.fillText('スーパー桃ゲージ', 30, 33);
+        if (barrierActive) {
+            ctx.fillStyle = '#ffd600';
+            ctx.font = 'bold 16px Inter, sans-serif';
+            ctx.fillText('バリア発動中!', 140, 33);
+        } else if (superBar >= superBarMax) {
+            ctx.fillStyle = '#ff9800';
+            ctx.font = 'bold 16px Inter, sans-serif';
+            ctx.fillText('Rキーでバリア!', 140, 33);
+        }
+        ctx.restore();
+    }
+
+    // モダンな桃描画
+    function drawPeach(peach) {
+        let grad;
+        if (peach.type === 'good') {
+            grad = ctx.createRadialGradient(peach.x - 5, peach.y - 5, 0, peach.x, peach.y, peach.radius);
+            grad.addColorStop(0, '#ffcccb');
+            grad.addColorStop(0.7, '#ffb3ba');
+            grad.addColorStop(1, '#ff9999');
+        } else if (peach.type === 'bad') {
+            grad = ctx.createRadialGradient(peach.x - 5, peach.y - 5, 0, peach.x, peach.y, peach.radius);
+            grad.addColorStop(0, '#b39ddb');
+            grad.addColorStop(0.7, '#9575cd');
+            grad.addColorStop(1, '#7e57c2');
+        } else if (peach.type === 'super') {
+            grad = ctx.createRadialGradient(peach.x, peach.y, 0, peach.x, peach.y, peach.radius);
+            grad.addColorStop(0, '#fffde7');
+            grad.addColorStop(0.5, '#ffe082');
+            grad.addColorStop(1, '#ffd600');
+        }
+        ctx.beginPath();
+        ctx.arc(peach.x, peach.y, peach.radius, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.shadowColor = peach.type === 'super' ? '#ffd600' : 'transparent';
+        ctx.shadowBlur = peach.type === 'super' ? 16 : 0;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // 溝
+        ctx.beginPath();
+        ctx.moveTo(peach.x, peach.y - (peach.type === 'super' ? peach.radius * 0.86 : peach.radius * 0.83));
+        ctx.quadraticCurveTo(peach.x, peach.y + 5, peach.x, peach.y + (peach.type === 'super' ? peach.radius * 0.86 : peach.radius * 0.83));
+        ctx.strokeStyle = peach.type === 'bad' ? '#7e57c2' : '#ff8a8a';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // 葉っぱ
+        ctx.beginPath();
+        ctx.ellipse(peach.x - 8, peach.y - (peach.type === 'super' ? peach.radius * 0.95 : peach.radius * 0.89), 8, 4, -Math.PI / 6, 0, Math.PI * 2);
+        ctx.fillStyle = peach.type === 'super' ? '#ffe082' : '#7ed957';
+        ctx.fill();
+    }
+
+    // モダンなバスケット描画
+    function drawBasket() {
+        // バスケット本体（グラデーション）
+        const gradient = ctx.createLinearGradient(basketX, 470, basketX, 490);
+        gradient.addColorStop(0, '#d4af37');
+        gradient.addColorStop(1, '#b8860b');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(basketX, 470, 60, 20);
+        
+        // バスケットの縁
+        ctx.strokeStyle = '#8b7355';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(basketX, 470, 60, 20);
+        
+        // バスケットの模様
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.moveTo(basketX + 15 + i * 15, 470);
+            ctx.lineTo(basketX + 15 + i * 15, 490);
+            ctx.strokeStyle = '#8b7355';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+    }
+
+    // ゲームループ
+    function gameLoop() {
+        // 背景クリア（グラデーション背景）
+        const bgGradient = ctx.createLinearGradient(0, 0, 0, 500);
+        bgGradient.addColorStop(0, '#e6f3ff');
+        bgGradient.addColorStop(1, '#f0f8ff');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, 400, 500);
+        
+        // 桃の生成
+        spawnPeach();
+        
+        // 桃の更新と描画
+        for (let i = peaches.length - 1; i >= 0; i--) {
+            const peach = peaches[i];
+            peach.y += peach.speed;
+            drawPeach(peach);
+            // キャッチ判定
+            if (peach.y > 460 && peach.y < 490 && peach.x > basketX && peach.x < basketX + 60) {
+                if (peach.type === 'good') {
+                    score++;
+                    scoreLabel.textContent = 'スコア: ' + score;
+                    playCatchSound();
+                    effects.push({ x: peach.x, y: peach.y, radius: peach.radius, alpha: 0.7, color: '#ffb3ba' });
+                } else if (peach.type === 'bad') {
+                    if (barrierActive) {
+                        // バリアで無効化
+                        effects.push({ x: peach.x, y: peach.y, radius: peach.radius, alpha: 0.7, color: '#ffe082' });
+                        barrierActive = false;
+                    } else {
+                        score = Math.max(0, score - 2);
+                        timeLeft = Math.max(0, timeLeft - 10);
+                        scoreLabel.textContent = 'スコア: ' + score;
+                        timeLabel.textContent = `残り時間: ${timeLeft}秒`;
+                        effects.push({ x: peach.x, y: peach.y, radius: peach.radius, alpha: 0.7, color: '#9575cd' });
+                    }
+                } else if (peach.type === 'super') {
+                    score += 5;
+                    scoreLabel.textContent = 'スコア: ' + score;
+                    superBar = Math.min(superBarMax, superBar + 20);
+                    effects.push({ x: peach.x, y: peach.y, radius: peach.radius, alpha: 0.8, color: '#ffe082' });
+                    timeLeft = Math.min(gameTime, timeLeft + 5);
+                    timeLabel.textContent = `残り時間: ${timeLeft}秒`;
+                }
+                peaches.splice(i, 1);
+                continue;
+            }
+            if (peach.y > 520 + peach.radius) {
+                peaches.splice(i, 1);
+            }
+        }
+        
+        // バスケット描画
+        drawBasket();
+        drawSuperBar();
+        drawEffects();
+    }
+
+    // ゲーム開始
+    function startGame() {
+        showScreen(gameScreen);
+        initGame();
+        isPlaying = true;
+        barrierActive = false;
+        // 桃の速度上昇タイマー
+        if (speedUpInterval) clearInterval(speedUpInterval);
+        speedUpInterval = setInterval(() => {
+            peachSpeed += 0.2;
+        }, 4000); // 4秒ごとに速度アップ
+        gameTimer = setInterval(() => {
+            timeLeft--;
+            timeLabel.textContent = `残り時間: ${timeLeft}秒`;
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }, 1000);
+        requestAnimationFrame(mainLoop);
+    }
+
+    // メインループ
+    function mainLoop() {
+        if (!isPlaying) return;
+        gameLoop();
+        requestAnimationFrame(mainLoop);
+    }
+
+    // ゲーム終了
+    function endGame() {
+        isPlaying = false;
+        clearInterval(gameTimer);
+        if (speedUpInterval) clearInterval(speedUpInterval);
+        barrierActive = false;
+        finalScore.textContent = score;
+        showScreen(resultScreen);
+    }
+
+    // 初期化
+    function initScreens() {
+        showScreen(startScreen);
+    }
+    
+    window.onload = initScreens;
+
+    // イベント
+    startBtn.onclick = startGame;
+    retryBtn.onclick = () => {
+        showScreen(startScreen);
+    };
+    
+    // キーボード操作（スムーズ移動）
+    const keys = {};
+    document.addEventListener('keydown', e => {
+        keys[e.key] = true;
+    });
+    
+    document.addEventListener('keyup', e => {
+        keys[e.key] = false;
+    });
+    
+    // スムーズなバスケット移動
+    function updateBasketMovement() {
+        if (isPlaying) {
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+                basketX = Math.max(0, basketX - 5);
+            }
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+                basketX = Math.min(340, basketX + 5);
+            }
+        }
+        requestAnimationFrame(updateBasketMovement);
+    }
+    updateBasketMovement();
+
+    // Rキーでバリア発動
+    window.addEventListener('keydown', e => {
+        if (e.key === 'r' || e.key === 'R') {
+            if (!barrierActive && superBar >= superBarMax && isPlaying) {
+                barrierActive = true;
+                superBar = 0;
+                effects.push({ x: basketX + 30, y: 480, radius: 60, alpha: 0.5, color: '#ffe082' });
+            }
+        }
+    });
+    </script>
+
 </body>
 </html>
